@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supreme Court Justice Locations Map</title>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+    <link rel="stylesheet" href="style.css">
+<style>
+   
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="hero-kicker">Supreme Court</div>
+      <h1>Justice Locations</h1>
+    </section>
+
+    <section class="section">
+      <div class="panel">
+      <div class="controls" id="controls"></div>
+      <div id="status"></div>
+    </div>
+    </section>
+
+    <section class="section">
+      <div class="panel">
+      <div id="map"></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const justices = [
+      {
+        name: "John G. Roberts, Jr.",
+        birthplace: "Buffalo, NY",
+        birth: [{ lat: 42.88023, lng: -78.878738, label: "Buffalo, NY" }],
+        lawSchool: "Harvard Law School (J.D.) - Cambridge, MA",
+        law: [{ lat: 42.3791064, lng: -71.1196785, label: "Harvard Law School (J.D.) - Cambridge, MA" }],
+        legalPractice: "Washington, D.C.",
+        legal: [{ lat: 38.89511, lng: -77.03637, label: "Washington, D.C." }]
+      },
+      {
+        name: "Clarence Thomas",
+        birthplace: "Savannah, GA",
+        birth: [{ lat: 32.076176, lng: -81.088371, label: "Savannah, GA" }],
+        lawSchool: "Yale Law School (J.D.) - New Haven, CT",
+        law: [{ lat: 41.3067, lng: -72.9227, label: "Yale Law School (J.D.) - New Haven, CT" }],
+        legalPractice: "Missouri",
+        legal: [{ lat: 38.573936, lng: -92.60376, label: "Missouri" }]
+      },
+      {
+        name: "Samuel A. Alito, Jr.",
+        birthplace: "Trenton, NJ",
+        birth: [{ lat: 40.217052, lng: -74.742935, label: "Trenton, NJ" }],
+        lawSchool: "Yale Law School (J.D.) - New Haven, CT",
+        law: [{ lat: 41.3067, lng: -72.9227, label: "Yale Law School (J.D.) - New Haven, CT" }],
+        legalPractice: "New Jersey; Washington D.C.",
+        legal: parseCoordinatePairs(
+          "(NJ) 39.833851  (DC) 38.89511",
+          "(NJ) -74.871826  (DC) -77.03637",
+          "New Jersey; Washington D.C."
+        )
+      },
+      {
+        name: "Sonia Sotomayor",
+        birthplace: "Bronx, NY",
+        birth: [{ lat: 40.5014, lng: -73.531, label: "Bronx, NY" }],
+        lawSchool: "Yale Law School (J.D.) - New Haven, CT",
+        law: [{ lat: 41.3067, lng: -72.9227, label: "Yale Law School (J.D.) - New Haven, CT" }],
+        legalPractice: "New York",
+        legal: [{ lat: 40.73061, lng: -73.935242, label: "New York" }]
+      },
+      {
+        name: "Elena Kagan",
+        birthplace: "New York, NY",
+        birth: [{ lat: 40.73061, lng: -73.935242, label: "New York, NY" }],
+        lawSchool: "Harvard Law School (J.D.) - Cambridge, MA",
+        law: [{ lat: 42.3791064, lng: -71.1196785, label: "Harvard Law School (J.D.) - Cambridge, MA" }],
+        legalPractice: "Washington, D.C.",
+        legal: [{ lat: 38.89511, lng: -77.03637, label: "Washington, D.C." }]
+      },
+      {
+        name: "Neil M. Gorsuch",
+        birthplace: "Denver, CO",
+        birth: [{ lat: 39.4424, lng: -104.5924, label: "Denver, CO" }],
+        lawSchool: "Harvard Law School (J.D.) - Cambridge, MA",
+        law: [{ lat: 42.3791064, lng: -71.1196785, label: "Harvard Law School (J.D.) - Cambridge, MA" }],
+        legalPractice: "Washington, D.C.",
+        legal: [{ lat: 38.89511, lng: -77.03637, label: "Washington, D.C." }]
+      },
+      {
+        name: "Brett M. Kavanaugh",
+        birthplace: "Washington, D.C.",
+        birth: [{ lat: 38.89511, lng: -77.03637, label: "Washington, D.C." }],
+        lawSchool: "Yale Law School (J.D.) - New Haven, CT",
+        law: [{ lat: 41.3067, lng: -72.9227, label: "Yale Law School (J.D.) - New Haven, CT" }],
+        legalPractice: "Maryland; Washington, D.C.",
+        legal: parseCoordinatePairs(
+          "(DC) 38.89511  (MD) 39.045753",
+          "(DC) -77.03637  (MD) -76.641273",
+          "Maryland; Washington, D.C."
+        )
+      },
+      {
+        name: "Amy Coney Barrett",
+        birthplace: "New Orleans, LA",
+        birth: [{ lat: 29.5834, lng: -90.0442, label: "New Orleans, LA" }],
+        lawSchool: "Notre Dame Law School (J.D.) - Indiana",
+        law: [{ lat: 41.6925, lng: -86.2361, label: "Notre Dame Law School (J.D.) - Indiana" }],
+        legalPractice: "Washington DC",
+        legal: [{ lat: 38.89511, lng: -77.03637, label: "Washington DC" }]
+      },
+      {
+        name: "Ketanji Brown Jackson",
+        birthplace: "Washington, D.C.",
+        birth: [{ lat: 38.89511, lng: -77.03637, label: "Washington, D.C." }],
+        lawSchool: "Harvard Law School (J.D.) - Cambridge, MA",
+        law: [{ lat: 42.3791064, lng: -71.1196785, label: "Harvard Law School (J.D.) - Cambridge, MA" }],
+        legalPractice: "Massachusetts; Washington D.C.",
+        legal: parseCoordinatePairs(
+          "(DC) 38.89511  (MA) 42.407211",
+          "(DC) -77.03637   (MA) -71.382439",
+          "Massachusetts; Washington D.C."
+        )
+      }
+    ];
+
+    const views = [
+      { key: "birth", label: "Birthplace" },
+      { key: "law", label: "Law School" },
+      { key: "legal", label: "Legal Practice" },
+      { key: "all", label: "All" }
+    ];
+
+    let currentView = "birth";
+
+    const viewColors = {
+      birth: "#ED1C24",
+      law: "#3995B2",
+      legal: "#FFCF01",
+      all: "#767c7d"
+    };
+
+    const mapEl = document.getElementById("map");
+    const statusEl = document.getElementById("status");
+    const tooltip = d3.select("#map")
+      .append("div")
+      .attr("class", "tooltip");
+
+    const width = 1100;
+    const height = 650;
+
+    const svg = d3.select("#map")
+      .append("svg")
+      .attr("viewBox", `0 0 ${width} ${height}`)
+      .attr("preserveAspectRatio", "xMidYMid meet");
+
+    const g = svg.append("g");
+    const basemapLayer = g.append("g");
+    const dotLayer = g.append("g");
+
+    const projection = d3.geoAlbersUsa()
+      .translate([width / 2, height / 2])
+      .scale(1300);
+
+    const path = d3.geoPath(projection);
+
+    buildButtons();
+    init();
+
+    async function init() {
+      const us = await d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json");
+
+      const nation = topojson.feature(us, us.objects.nation);
+      const states = topojson.feature(us, us.objects.states);
+
+      basemapLayer.append("path")
+        .datum(nation)
+        .attr("class", "nation")
+        .attr("d", path);
+
+      basemapLayer.selectAll("path.state")
+        .data(states.features)
+        .join("path")
+        .attr("class", "state")
+        .attr("d", path);
+
+      renderDots();
+    }
+
+    function buildButtons() {
+      const controls = d3.select("#controls");
+
+      const buttons = controls.selectAll("button")
+        .data(views)
+        .join("button")
+        .attr("class", d => d.key === currentView ? "active" : null)
+        .style("border-color", d => viewColors[d.key] || "#111")
+        .style("background", d => d.key === currentView ? "#111111" : "#fff")
+        .style("color", d => d.key === currentView ? "#fff" : "#111");
+
+      buttons.html(d => {
+        const dotColor = d.key === "all" ? viewColors.all : viewColors[d.key];
+        return `<span class="button-dot" style="background:${dotColor};"></span><span>${d.label}</span>`;
+      });
+
+      buttons.each(function(d) {
+        const isActive = d.key === currentView;
+        const dot = this.querySelector('.button-dot');
+        if (dot) {
+          dot.style.background = (d.key === 'all' ? viewColors.all : viewColors[d.key]);
+        }
+      });
+
+      buttons.on("click", (_, d) => {
+        currentView = d.key;
+
+        buttons
+          .classed("active", btn => btn.key === currentView)
+          .style("background", btn => btn.key === currentView ? "#111111" : "#fff")
+          .style("color", btn => btn.key === currentView ? "#fff" : "#111");
+
+        buttons.each(function(d) {
+          const isActive = d.key === currentView;
+          const dot = this.querySelector('.button-dot');
+          if (dot) {
+            dot.style.background = (d.key === 'all' ? viewColors.all : viewColors[d.key]);
+          }
+        });
+
+        renderDots();
+      });
+    }
+
+    function renderDots() {
+      const points = aggregatePoints(flattenPoints(currentView))
+        .map(d => {
+          const xy = projection([d.lng, d.lat]);
+          return xy ? { ...d, x: xy[0], y: xy[1] } : null;
+        })
+        .filter(Boolean);
+
+      if (currentView === "all") {
+        const counts = ["birth", "law", "legal"]
+          .map(key => `${labelForView(key)}: ${points.filter(d => d.viewKey === key).length}`)
+          .join(" · ");
+        statusEl.textContent = `All locations: ${points.length} mapped circles. ${counts}.`;
+      } else {
+        statusEl.textContent = `${labelForView(currentView)}: ${points.length} mapped circle${points.length === 1 ? "" : "s"}.`;
+      }
+
+      const dots = dotLayer.selectAll("circle.dot")
+        .data(points, d => `${d.viewKey}-${d.lat}-${d.lng}`);
+
+      dots.join(
+        enter => enter.append("circle")
+          .attr("class", "dot")
+          .attr("fill", d => viewColors[d.viewKey] || "#333")
+          .attr("cx", d => d.x)
+          .attr("cy", d => d.y)
+          .attr("r", 0)
+          .on("mouseenter", (event, d) => showTooltip(event, d))
+          .on("mousemove", (event, d) => moveTooltip(event, d))
+          .on("mouseleave", hideTooltip)
+          .call(enter => enter.transition().duration(220).attr("r", d => circleRadius(d.count))),
+        update => update
+          .call(update => update.transition().duration(220)
+            .attr("fill", d => viewColors[d.viewKey] || "#333")
+            .attr("cx", d => d.x)
+            .attr("cy", d => d.y)
+            .attr("r", d => circleRadius(d.count))),
+        exit => exit.call(exit => exit.transition().duration(160).attr("r", 0).remove())
+      );
+    }
+
+    function flattenPoints(viewKey) {
+      const sourceKeys = viewKey === "all" ? ["birth", "law", "legal"] : [viewKey];
+      const out = [];
+
+      justices.forEach(justice => {
+        sourceKeys.forEach(sourceKey => {
+          const locs = justice[sourceKey] || [];
+          locs.forEach(loc => {
+            out.push({
+              name: justice.name,
+              viewKey: sourceKey,
+              lat: +loc.lat,
+              lng: +loc.lng,
+              locationLabel: loc.label
+            });
+          });
+        });
+      });
+
+      return out;
+    }
+
+    function labelForView(key) {
+      return views.find(v => v.key === key)?.label || key;
+    }
+
+    function showTooltip(event, d) {
+      const namesHtml = d.names.map(name => `• ${name}`).join("<br>");
+      tooltip
+        .style("opacity", 1)
+        .html(
+          `<strong>${d.count} ${d.count === 1 ? "justice" : "justices"}</strong><br>` +
+          `${labelForView(d.viewKey)}: ${d.locationLabel}<br>` +
+          `Lat: ${d.lat}, Lng: ${d.lng}<br><br>${namesHtml}`
+        );
+      moveTooltip(event, d);
+    }
+
+    function moveTooltip(event) {
+      const bounds = mapEl.getBoundingClientRect();
+      tooltip
+        .style("left", `${event.clientX - bounds.left}px`)
+        .style("top", `${event.clientY - bounds.top}px`);
+    }
+
+    function hideTooltip() {
+      tooltip.style("opacity", 0);
+    }
+
+    function aggregatePoints(points) {
+      const grouped = new Map();
+
+      points.forEach(d => {
+        const key = `${d.viewKey}__${d.lat}__${d.lng}`;
+        if (!grouped.has(key)) {
+          grouped.set(key, {
+            viewKey: d.viewKey,
+            lat: d.lat,
+            lng: d.lng,
+            locationLabel: d.locationLabel,
+            names: [d.name],
+            count: 1
+          });
+        } else {
+          const entry = grouped.get(key);
+          entry.names.push(d.name);
+          entry.count += 1;
+        }
+      });
+
+      return Array.from(grouped.values())
+        .map(d => ({ ...d, names: d.names.sort(d3.ascending) }));
+    }
+
+    function circleRadius(count) {
+      return 10 + Math.sqrt(Math.max(0, count - 1)) * 5;
+    }
+
+    function parseCoordinatePairs(latStr, lngStr, labelFallback) {
+      const latMatches = String(latStr).match(/-?\d+(?:\.\d+)?/g) || [];
+      const lngMatches = String(lngStr).match(/-?\d+(?:\.\d+)?/g) || [];
+      const count = Math.min(latMatches.length, lngMatches.length);
+      const labels = String(labelFallback).split(";").map(d => d.trim()).filter(Boolean);
+
+      const out = [];
+      for (let i = 0; i < count; i++) {
+        out.push({
+          lat: +latMatches[i],
+          lng: +lngMatches[i],
+          label: labels[i] || `Location ${i + 1}`
+        });
+      }
+      return out;
+    }
+  </script>
+</body>
+</html>

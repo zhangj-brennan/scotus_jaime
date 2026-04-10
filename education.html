@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supreme Court Education Sankeys</title>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+      <link rel="stylesheet" href="style.css">
+<style>
+   
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-sans);
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.45;
+    }
+
+    .wrap {
+      width: min(100% - 2 * var(--gutter), var(--max));
+      margin-inline: auto;
+      padding: 40px 0 60px;
+    }
+
+    .hero {
+      margin-bottom: 32px;
+    }
+
+    .hero-kicker {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: 12px;
+    }
+
+    .subhed {
+      max-width: 80ch;
+      margin: 16px 0 0;
+      font-size: 1.05rem;
+      color: var(--muted);
+    }
+
+    .chart-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .chart-card {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 0 16px;
+    }
+
+    .chart-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .chart-title {
+      margin: 0;
+      font-size: 1.5rem;
+      line-height: 1.1;
+      font-weight: 800;
+    }
+
+    .chart-meta {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .chart-frame {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    svg {
+      display: block;
+      background: #fff;
+    }
+
+    .node rect {
+      stroke: rgba(0,0,0,0.15);
+      shape-rendering: crispEdges;
+    }
+
+    .node text {
+      font-size: 12px;
+      fill: #111;
+    }
+
+    .link {
+      fill: none;
+      stroke-opacity: 0.35;
+      mix-blend-mode: multiply;
+    }
+
+    .link:hover {
+      stroke-opacity: 0.65;
+    }
+
+    .col-label {
+      font-size: 12px;
+      font-weight: 700;
+      fill: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .tooltip {
+      position: fixed;
+      pointer-events: none;
+      background: rgba(17,17,17,0.96);
+      color: #fff;
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.4;
+      max-width: 320px;
+      opacity: 0;
+      transition: opacity 120ms ease;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="hero-kicker">Supreme Court</div>
+      <h1>Justice Education Sankeys</h1>
+    </section>
+
+    <section class="chart-grid" id="chartGrid"></section>
+  </div>
+
+  <div class="tooltip" id="tooltip"></div>
+
+  <script>
+    const chartData = [
+      {
+        key: 'current_2026',
+        title: 'CURRENT COURT MARCH 2026',
+        color: '#ED1C24',
+        rows: [
+          ['John G. Roberts, Jr.', 'Harvard College (B.A.)', 'Harvard Law School (J.D.)'],
+          ['Clarence Thomas', 'College of the Holy Cross (B.A.)', 'Yale Law School (J.D.)'],
+          ['Samuel A. Alito, Jr.', 'Princeton University', 'Yale Law School (J.D.)'],
+          ['Sonia Sotomayor', 'Princeton University (B.A.)', 'Yale Law School (J.D.)'],
+          ['Elena Kagan', 'Princeton University (B.A.)', 'Harvard Law School (J.D.)'],
+          ['Neil M. Gorsuch', 'Columbia University (B.A.)', 'Harvard Law School (J.D.)'],
+          ['Brett M. Kavanaugh', 'Yale College (B.A.)', 'Yale Law School (J.D.)'],
+          ['Amy Coney Barrett', 'Rhodes College (B.A.)', 'Notre Dame Law School (J.D.)'],
+          ['Ketanji Brown Jackson', 'Harvard-Radcliffe College (B.A.)', 'Harvard Law School (J.D.)']
+        ]
+      },
+      {
+        key: 'march_2001',
+        title: 'March 2001 Supreme Court',
+        color: '#3995B2',
+        rows: [
+          ['William Rehnquist', 'Stanford University (B.A.)', 'Stanford Law School (LL.B)'],
+          ['John Paul Stevens', 'University of Chicago (B.A.)', 'Northwestern University School of Law (J.D.)'],
+          ["Sandra Day O'Connor", 'Stanford Unviersity (A.B.)', 'Stanford Law School (LL.B)'],
+          ['Antonin Scalia', 'Georgetown College (B.A.)', 'Harvard Law School (LL. B)'],
+          ['Anthony Kennedy', 'Stanford University (B.A.)', 'Harvard Law School (J.D.)'],
+          ['David Souter', 'Harvard College (B.A.)', 'Harvard Law School (LL.B)'],
+          ['Ruth Bader Ginsburg', 'Cornell University (A.B.)', 'Harvard Law School; Columbia Law School (LL.B)'],
+          ['Stephen Breyer', 'Stanford University (A.B.)', 'Harvard Law School (LL.B)'],
+          ['Clarence Thomas', 'College of the Holy Cross (B.A.)', 'Yale Law School (J.D.)']
+        ]
+      },
+      {
+        key: 'march_1976',
+        title: 'March 1976 Supreme Court',
+        color: '#FFCF01',
+        rows: [
+          ['Warren E. Burger', '', 'St. Paul College of Law (LL.B)'],
+          ['Thurgood Marshall', 'Lincoln University (A.B.)', 'Howard University School of Law (LL.B)'],
+          ['Byron White', 'University of Colorado (B.A.)', 'Yale Law School (LL.B)'],
+          ['Potter Stewart', 'Yale University (B.A.)', 'Yale Law School (LL.B)'],
+          ['William J Brennan Jr.', 'University of Pennsylvania (B.S.)', 'Harvard Law School (LL.B)'],
+          ['Harry Blackmun', 'Harvard College (A.B.)', 'Harvard Law School (LL.B)'],
+          ['Lewis F Powell Jr.', 'Washington and Lee University (B.S.)', 'Washington and Lee University School of Law (LL.B)'],
+          ['William Rehnquist', 'Stanford University (B.A.)', 'Stanford Law School (LL.B)'],
+          ['John Paul Stevens', 'University of Chicago (B.A.)', 'Northwestern University School of Law (J.D.)']
+        ]
+      },
+      {
+        key: 'march_1951',
+        title: 'March 1951 Supreme Court',
+        color: '#767c7d',
+        rows: [
+          ['Fred M Vinson', 'Centre College (B.A.)', 'College of Law of Central University (LL.B)'],
+          ['Tom C Clark', 'University of Texas (A.B.)', 'University of Texas School of Law (LL.B.)'],
+          ['Sherman Minton', '', 'Indiana University School of Law (LL.B); Yale Law School (LL.M)'],
+          ['Harold H Burton', 'Bowdoin College (A.B.)', 'Harvard Law School (LL.B.)'],
+          ['Robert H Jackson', '', 'Albany Law School'],
+          ['William O Douglas', 'Whitman College (A.B.)', 'Columbia Law School (LL.B.)'],
+          ['Felix Frankfurter', 'City College of New York (B.A.)', 'Harvard Law School (LL.B.)'],
+          ['Stanley Forman Reed', 'Kentucky Wesleyan College (B.A.)', 'Columbia Law School; University of Virginia School of Law'],
+          ['Hugo Black', '', 'University of Alabama School of Law (LL.B.)']
+        ]
+      }
+    ];
+
+    const COLLEGE_ALIASES = new Map([
+      ['Harvard College', 'Harvard College'],
+      ['Harvard-Radcliffe College', 'Harvard College'],
+      ['Princeton University', 'Princeton University'],
+      ['Stanford University', 'Stanford University'],
+      ['Stanford Unviersity', 'Stanford University'],
+      ['Yale College', 'Yale University'],
+      ['Yale University', 'Yale University']
+    ]);
+
+    const tooltip = d3.select('#tooltip');
+
+    chartData.forEach(config => {
+      renderEducationSankey('#chartGrid', config);
+    });
+
+    function renderEducationSankey(containerSelector, config) {
+      const width = 1200;
+      const height = 420;
+      const margin = { top: 26, right: 200, bottom: 16, left: 200 };
+      const endpointLabel = 'Supreme Court';
+
+      const container = d3.select(containerSelector)
+        .append('article')
+        .attr('class', 'chart-card');
+
+      const graph = buildSankeyGraph(config.rows, endpointLabel);
+
+      container.append('div')
+        .attr('class', 'chart-head')
+        .html(`
+          <h2 class="chart-title">${config.title}</h2>
+          <div class="chart-meta">${graph.justiceCount} justices · ${graph.collegeCount} colleges · ${graph.lawSchoolCount} law schools</div>
+        `);
+
+      const frame = container.append('div').attr('class', 'chart-frame');
+      const svg = frame.append('svg')
+        .attr('width', width)
+        .attr('height', height);
+
+      const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+      const innerWidth = width - margin.left - margin.right;
+      const innerHeight = height - margin.top - margin.bottom;
+
+      const sankey = d3.sankey()
+        .nodeId(d => d.id)
+        .nodeWidth(10)
+        .nodePadding(12)
+        .nodeAlign(d3.sankeyJustify)
+        .extent([[0, 20], [innerWidth, innerHeight - 10]])
+        .nodeSort(null);
+
+      const sankeyGraph = sankey({
+        nodes: graph.nodes.map(d => ({ ...d })),
+        links: graph.links.map(d => ({ ...d }))
+      });
+
+      drawColumnLabels(g, innerWidth);
+
+      g.append('g')
+        .selectAll('path')
+        .data(sankeyGraph.links)
+        .join('path')
+        .attr('class', 'link')
+        .attr('d', d3.sankeyLinkHorizontal())
+        .attr('stroke', d => linkColor(d, config.color))
+        .attr('stroke-width', d => Math.max(0.6, d.width * 0.7))
+        .on('mouseenter', (event, d) => {
+          const source = sanitizeLabel(d.source.name);
+          const target = sanitizeLabel(d.target.name);
+          showTooltip(event, `<strong>${source}</strong> → <strong>${target}</strong><br>Value: ${formatValue(d.value)}`);
+        })
+        .on('mousemove', moveTooltip)
+        .on('mouseleave', hideTooltip);
+
+      const node = g.append('g')
+        .selectAll('g')
+        .data(sankeyGraph.nodes)
+        .join('g')
+        .attr('class', 'node');
+
+      node.append('rect')
+        .attr('x', d => d.x0)
+        .attr('y', d => d.y0)
+        .attr('height', d => Math.max(1, d.y1 - d.y0))
+        .attr('width', d => d.x1 - d.x0)
+        .attr('fill', d => nodeColor(d, config.color))
+        .on('mouseenter', (event, d) => {
+          const typeLabel = d.type === 'justice' ? 'Justice' : d.type === 'college' ? 'College' : d.type === 'law' ? 'Law School' : 'Endpoint';
+          showTooltip(event, `<strong>${sanitizeLabel(d.name)}</strong><br>${typeLabel}<br>Total flow: ${formatValue(d.value)}`);
+        })
+        .on('mousemove', moveTooltip)
+        .on('mouseleave', hideTooltip);
+
+      node.append('text')
+        .attr('x', d => d.x0 < innerWidth / 2 ? d.x1 + 8 : d.x0 - 8)
+        .attr('y', d => (d.y0 + d.y1) / 2)
+        .attr('dy', '0.35em')
+        .attr('text-anchor', d => d.x0 < innerWidth / 2 ? 'start' : 'end')
+        .text(d => sanitizeLabel(d.name));
+    }
+
+    function buildSankeyGraph(rows, endpointLabel) {
+      const SCALE = 0.6; // shrink vertical node size
+
+      const nodes = [];
+      const nodeSeen = new Set();
+      const linkMap = new Map();
+
+      function addNode(id, name, type) {
+        if (nodeSeen.has(id)) return;
+        nodeSeen.add(id);
+        nodes.push({ id, name, type });
+      }
+
+      function addLink(source, target, value) {
+        const key = `${source}|||${target}`;
+        if (!linkMap.has(key)) {
+          linkMap.set(key, { source, target, value: 0 });
+        }
+        linkMap.get(key).value += value * SCALE;
+      }
+
+      rows.forEach(([justiceRaw, collegeRaw, lawRaw]) => {
+        const justice = justiceRaw.trim();
+        const college = normalizeCollege(collegeRaw);
+        const lawSchools = splitLawSchools(lawRaw);
+        const share = lawSchools.length ? 1 / lawSchools.length : 1;
+
+        addNode(`justice:${justice}`, justice, 'justice');
+        addNode(`college:${college}`, college, 'college');
+        addLink(`justice:${justice}`, `college:${college}`, 1);
+
+        if (!lawSchools.length) {
+          addNode(`law:Unknown law school`, 'Unknown law school', 'law');
+          addLink(`college:${college}`, `law:Unknown law school`, 1);
+          addNode(`endpoint:${endpointLabel}`, endpointLabel, 'endpoint');
+          addLink(`law:Unknown law school`, `endpoint:${endpointLabel}`, 1);
+          return;
+        }
+
+        lawSchools.forEach(lawSchool => {
+          addNode(`law:${lawSchool}`, lawSchool, 'law');
+          addLink(`college:${college}`, `law:${lawSchool}`, share);
+          addNode(`endpoint:${endpointLabel}`, endpointLabel, 'endpoint');
+          addLink(`law:${lawSchool}`, `endpoint:${endpointLabel}`, share);
+        });
+      });
+
+      return {
+        nodes,
+        links: Array.from(linkMap.values()),
+        justiceCount: rows.length,
+        collegeCount: nodes.filter(d => d.type === 'college').length,
+        lawSchoolCount: nodes.filter(d => d.type === 'law').length
+      };
+    }
+
+    function normalizeCollege(raw) {
+      const cleaned = stripDegreeSuffix(raw || '').trim();
+      if (!cleaned) return 'No college listed';
+      return COLLEGE_ALIASES.get(cleaned) || cleaned;
+    }
+
+    function splitLawSchools(raw) {
+      const cleaned = String(raw || '').trim();
+      if (!cleaned) return [];
+      return cleaned
+        .split(';')
+        .map(d => stripDegreeSuffix(d).trim())
+        .filter(Boolean);
+    }
+
+    function stripDegreeSuffix(value) {
+      return String(value || '')
+        .replace(/\s*\([^)]*\)\s*/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function nodeColor(node, chartColor) {
+      return '#111111';
+    }
+
+    function linkColor(link, chartColor) {
+      return '#111111';
+    }
+
+    function drawColumnLabels(g, innerWidth) {
+      const labels = [
+        { text: 'Supreme Court Justices', x: 0 },
+        { text: 'College', x: innerWidth * 0.34 },
+        { text: 'Law School', x: innerWidth * 0.67 },
+        { text: 'Supreme Court', x: innerWidth }
+      ];
+
+      g.append('g')
+        .selectAll('text')
+        .data(labels)
+        .join('text')
+        .attr('class', 'col-label')
+        .attr('x', d => d.x)
+        .attr('y', 0)
+        .attr('text-anchor', d => d.text === 'Supreme Court' ? 'end' : 'start')
+        .text(d => d.text);
+    }
+
+    function formatValue(value) {
+      return Number.isInteger(value) ? value : d3.format('.2f')(value);
+    }
+
+    function sanitizeLabel(text) {
+      return String(text || '');
+    }
+
+    function showTooltip(event, html) {
+      tooltip.style('opacity', 1).html(html);
+      moveTooltip(event);
+    }
+
+    function moveTooltip(event) {
+      tooltip
+        .style('left', `${event.clientX + 14}px`)
+        .style('top', `${event.clientY + 14}px`);
+    }
+
+    function hideTooltip() {
+      tooltip.style('opacity', 0);
+    }
+  </script>
+</body>
+</html>

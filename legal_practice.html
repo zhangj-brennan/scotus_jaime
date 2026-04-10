@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supreme Court Legal Practice Map by Era</title>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+    <link rel="stylesheet" href="style.css">
+<style>
+   
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="hero-kicker">Supreme Court</div>
+      <h1>Legal Practice by Court Era</h1>
+    </section>
+
+    <section class="section">
+      <div class="panel">
+        <div class="controls" id="controls"></div>
+        <div id="status"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="panel">
+        <div id="map"></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const courtSets = {
+      current_2026: {
+        label: "CURRENT COURT MARCH 2026",
+        color: "#ED1C24",
+        justices: [
+          { name: "John G. Roberts, Jr.", legal: [{ lat: 38.89511, lng: -77.03637, label: "Washington, D.C." }] },
+          { name: "Clarence Thomas", legal: [{ lat: 38.573936, lng: -92.60376, label: "Missouri" }] },
+          { name: "Samuel A. Alito, Jr.", legal: parseCoordinatePairs("(NJ) 39.833851  (DC) 38.89511", "(NJ) -74.871826  (DC) -77.03637", "New Jersey; Washington D.C.") },
+          { name: "Sonia Sotomayor", legal: [{ lat: 40.73061, lng: -73.935242, label: "New York" }] },
+          { name: "Elena Kagan", legal: [{ lat: 38.89511, lng: -77.03637, label: "Washington, D.C." }] },
+          { name: "Neil M. Gorsuch", legal: [{ lat: 38.89511, lng: -77.03637, label: "Washington, D.C." }] },
+          { name: "Brett M. Kavanaugh", legal: parseCoordinatePairs("(DC) 38.89511  (MD) 39.045753", "(DC) -77.03637  (MD) -76.641273", "Maryland; Washington, D.C.") },
+          { name: "Amy Coney Barrett", legal: [{ lat: 38.89511, lng: -77.03637, label: "Washington DC" }] },
+          { name: "Ketanji Brown Jackson", legal: parseCoordinatePairs("(DC) 38.89511  (MA) 42.407211", "(DC) -77.03637   (MA) -71.382439", "Massachusetts; Washington D.C.") }
+        ]
+      },
+      march_2001: {
+        label: "March 2001 Supreme Court",
+        color: "#3995B2",
+        justices: [
+          { name: "William Rehnquist", legal: [{ lat: 38.89511, lng: -77.03637, label: "Washington, DC" }] },
+          { name: "John Paul Stevens", legal: [{ lat: 40, lng: -89, label: "Illinois" }] },
+          { name: "Sandra Day O'Connor", legal: [{ lat: 34.048927, lng: -111.093735, label: "Arizona" }] },
+          { name: "Antonin Scalia", legal: [{ lat: 37.926868, lng: -78.024902, label: "Virginia" }] },
+          { name: "Anthony Kennedy", legal: [{ lat: 36.778259, lng: -119.417931, label: "California" }] },
+          { name: "David Souter", legal: [{ lat: 44, lng: -71.5, label: "New Hampshire" }] },
+          { name: "Ruth Bader Ginsburg", legal: [{ lat: 40, lng: -74, label: "New York" }] },
+          { name: "Stephen Breyer", legal: [{ lat: 38.89511, lng: -77.03637, label: "Washington, DC" }] },
+          { name: "Clarence Thomas", legal: [{ lat: 38.573936, lng: -92.60376, label: "Missouri" }] }
+        ]
+      },
+      march_1976: {
+        label: "March 1976 Supreme Court",
+        color: "#FFCF01",
+        justices: [
+          { name: "Warren E. Burger", legal: [{ lat: 46.3924, lng: -94.6362, label: "Minnesota" }] },
+          { name: "Thurgood Marshall", legal: [{ lat: 39.045753, lng: -76.641273, label: "Maryland" }] },
+          { name: "Bryon White", legal: [{ lat: 39, lng: -105.3, label: "Colorado" }] },
+          { name: "Potter Stewart", legal: [{ lat: 40, lng: -74, label: "New York" }] },
+          { name: "William J Brennan Jr.", legal: [{ lat: 39.833851, lng: -74.871826, label: "New Jersey" }] },
+          { name: "Harry Blackmun", legal: [{ lat: 46.3924, lng: -94.6362, label: "Minnesota" }] },
+          { name: "Lewis F Powell Jr.", legal: [{ lat: 37.926868, lng: -78.024902, label: "Virginia" }] },
+          { name: "William Rehnquist", legal: [{ lat: 34.048927, lng: -111.093735, label: "Arizona" }] },
+          { name: "John Paul Stevens", legal: [{ lat: 40, lng: -89, label: "Illinois" }] }
+        ]
+      },
+      march_1951: {
+        label: "March 1951 Supreme Court",
+        color: "#767c7d",
+        justices: [
+          { name: "Fred M Vinson", legal: [{ lat: 37.839333, lng: -84.27002, label: "Kentucky" }] },
+          { name: "Tom C Clark", legal: [{ lat: 31, lng: -100, label: "Texas" }] },
+          { name: "Sherman Minton", legal: [{ lat: 40.2735, lng: -86.1269, label: "Indiana" }] },
+          { name: "Harold H Burton", legal: [{ lat: 40.3675, lng: -82.9962, label: "Ohio" }] },
+          { name: "Robert H Jackson", legal: [{ lat: 40, lng: -74, label: "New York" }] },
+          { name: "William O Douglas", legal: [{ lat: 40, lng: -74, label: "New York" }] },
+          { name: "Felix Frankfurter", legal: [{ lat: 40, lng: -74, label: "New York" }] },
+          { name: "Stanley Forman Reed", legal: [{ lat: 37.839333, lng: -84.27002, label: "Kentucky" }] },
+          { name: "Hugo Black", legal: [{ lat: 32.806671, lng: -86.79113, label: "Alabama" }] }
+        ]
+      }
+    };
+
+    const views = [
+      { key: "current_2026", label: "CURRENT COURT MARCH 2026" },
+      { key: "march_2001", label: "March 2001 Supreme Court" },
+      { key: "march_1976", label: "March 1976 Supreme Court" },
+      { key: "march_1951", label: "March 1951 Supreme Court" }
+    ];
+
+    let currentView = "current_2026";
+
+    const mapEl = document.getElementById("map");
+    const statusEl = document.getElementById("status");
+    const tooltip = d3.select("#map")
+      .append("div")
+      .attr("class", "tooltip");
+
+    const width = 1100;
+    const height = 650;
+
+    const svg = d3.select("#map")
+      .append("svg")
+      .attr("viewBox", `0 0 ${width} ${height}`)
+      .attr("preserveAspectRatio", "xMidYMid meet");
+
+    const g = svg.append("g");
+    const basemapLayer = g.append("g");
+    const dotLayer = g.append("g");
+
+    const projection = d3.geoAlbersUsa()
+      .translate([width / 2, height / 2])
+      .scale(1300);
+
+    const path = d3.geoPath(projection);
+
+    buildButtons();
+    init();
+
+    async function init() {
+      const us = await d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json");
+
+      const nation = topojson.feature(us, us.objects.nation);
+      const states = topojson.feature(us, us.objects.states);
+
+      basemapLayer.append("path")
+        .datum(nation)
+        .attr("class", "nation")
+        .attr("d", path);
+
+      basemapLayer.selectAll("path.state")
+        .data(states.features)
+        .join("path")
+        .attr("class", "state")
+        .attr("d", path);
+
+      renderDots();
+    }
+
+    function buildButtons() {
+      const controls = d3.select("#controls");
+
+      const buttons = controls.selectAll("button")
+        .data(views)
+        .join("button")
+        .attr("class", d => d.key === currentView ? "active" : null)
+        .style("background", d => d.key === currentView ? "#111111" : "#fff")
+        .style("color", d => d.key === currentView ? "#fff" : "#111");
+
+      buttons.html(d => {
+        const dotColor = courtSets[d.key].color;
+        return `<span class="button-dot" style="background:${dotColor};"></span><span>${d.label}</span>`;
+      });
+
+      buttons.on("click", (_, d) => {
+        currentView = d.key;
+
+        buttons
+          .classed("active", btn => btn.key === currentView)
+          .style("background", btn => btn.key === currentView ? "#111111" : "#fff")
+          .style("color", btn => btn.key === currentView ? "#fff" : "#111");
+
+        renderDots();
+      });
+    }
+
+    function renderDots() {
+      const activeSet = courtSets[currentView];
+      const points = aggregatePoints(flattenPoints(currentView))
+        .map(d => {
+          const xy = projection([d.lng, d.lat]);
+          return xy ? { ...d, x: xy[0], y: xy[1] } : null;
+        })
+        .filter(Boolean);
+
+      const totalJustices = activeSet.justices.length;
+      statusEl.textContent = `${activeSet.label}: ${points.length} mapped circle${points.length === 1 ? "" : "s"} across ${totalJustices} justices.`;
+
+      const dots = dotLayer.selectAll("circle.dot")
+        .data(points, d => `${currentView}-${d.lat}-${d.lng}`);
+
+      dots.join(
+        enter => enter.append("circle")
+          .attr("class", "dot")
+          .attr("fill", activeSet.color)
+          .attr("cx", d => d.x)
+          .attr("cy", d => d.y)
+          .attr("r", 0)
+          .on("mouseenter", (event, d) => showTooltip(event, d, activeSet.label))
+          .on("mousemove", moveTooltip)
+          .on("mouseleave", hideTooltip)
+          .call(enter => enter.transition().duration(220).attr("r", d => circleRadius(d.count))),
+        update => update
+          .call(update => update.transition().duration(220)
+            .attr("fill", activeSet.color)
+            .attr("cx", d => d.x)
+            .attr("cy", d => d.y)
+            .attr("r", d => circleRadius(d.count))),
+        exit => exit.call(exit => exit.transition().duration(160).attr("r", 0).remove())
+      );
+    }
+
+    function flattenPoints(viewKey) {
+      const justices = courtSets[viewKey].justices;
+      const out = [];
+
+      justices.forEach(justice => {
+        (justice.legal || []).forEach(loc => {
+          out.push({
+            name: justice.name,
+            lat: +loc.lat,
+            lng: +loc.lng,
+            locationLabel: loc.label
+          });
+        });
+      });
+
+      return out;
+    }
+
+    function showTooltip(event, d, label) {
+      const namesHtml = d.names.map(name => `• ${name}`).join("<br>");
+      tooltip
+        .style("opacity", 1)
+        .html(
+          `<strong>${label}</strong><br>` +
+          `<strong>${d.count} ${d.count === 1 ? "justice" : "justices"}</strong><br>` +
+          `${d.locationLabel}<br>` +
+          `Lat: ${d.lat}, Lng: ${d.lng}<br><br>${namesHtml}`
+        );
+      moveTooltip(event);
+    }
+
+    function moveTooltip(event) {
+      const bounds = mapEl.getBoundingClientRect();
+      tooltip
+        .style("left", `${event.clientX - bounds.left}px`)
+        .style("top", `${event.clientY - bounds.top}px`);
+    }
+
+    function hideTooltip() {
+      tooltip.style("opacity", 0);
+    }
+
+    function aggregatePoints(points) {
+      const grouped = new Map();
+
+      points.forEach(d => {
+        const key = `${d.lat}__${d.lng}`;
+        if (!grouped.has(key)) {
+          grouped.set(key, {
+            lat: d.lat,
+            lng: d.lng,
+            locationLabel: d.locationLabel,
+            names: [d.name],
+            count: 1
+          });
+        } else {
+          const entry = grouped.get(key);
+          entry.names.push(d.name);
+          entry.count += 1;
+        }
+      });
+
+      return Array.from(grouped.values())
+        .map(d => ({ ...d, names: d.names.sort(d3.ascending) }));
+    }
+
+    function circleRadius(count) {
+      return 8 + Math.sqrt(Math.max(0, count - 1)) * 5;
+    }
+
+    function parseCoordinatePairs(latStr, lngStr, labelFallback) {
+      const latMatches = String(latStr).match(/-?\d+(?:\.\d+)?/g) || [];
+      const lngMatches = String(lngStr).match(/-?\d+(?:\.\d+)?/g) || [];
+      const count = Math.min(latMatches.length, lngMatches.length);
+      const labels = String(labelFallback).split(";").map(d => d.trim()).filter(Boolean);
+
+      const out = [];
+      for (let i = 0; i < count; i++) {
+        out.push({
+          lat: +latMatches[i],
+          lng: +lngMatches[i],
+          label: labels[i] || `Location ${i + 1}`
+        });
+      }
+      return out;
+    }
+  </script>
+</body>
+</html>
