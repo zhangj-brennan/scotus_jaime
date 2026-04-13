@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Circuit Maps</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    .maps {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      margin-top: 20px;
+    }
+
+    .map-card {
+      border-top: 1px solid #000;
+      padding-top: 10px;
+    }
+
+    .map-title {
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      background: #fff;
+    }
+
+    .district {
+      stroke: #fff;
+      stroke-width: 0.6px;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .district:hover {
+      stroke: #111;
+      stroke-width: 1.1px;
+    }
+
+    .dc-inset rect {
+      stroke: #000;
+      stroke-width: 1px;
+    }
+
+    .dc-inset text {
+      font-size: 11px;
+      font-weight: 700;
+      fill: #111;
+      dominant-baseline: middle;
+      text-anchor: middle;
+      pointer-events: none;
+    }
+
+    .tooltip {
+      position: fixed;
+      pointer-events: none;
+      background: #fff;
+      color: #000;
+      border: 1px solid #000;
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.35;
+      max-width: 260px;
+      opacity: 0;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="hero-kicker">Supreme Court</div>
+      <h1>Circuit Maps Over Time</h1>
+        <div id="maps" class="maps"></div>
+
+    </section>
+
+
+<div id="tooltip" class="tooltip"></div>
+
+<script>
+const WIDTH = 500;
+const HEIGHT = 320;
+
+const periods = [
+  {
+    label: "CURRENT COURT MARCH 2026",
+    data: {
+      "DC": [
+        "John G. Roberts, Jr",
+        "Clarence Thomas",
+        "Brett M. Kavanaugh",
+        "Ketanji Brown Jackson"
+      ],
+      "03": ["Samuel A. Alito, Jr."],
+      "02": ["Sonia Sotomayor"],
+      "10": ["Neil M. Gorsuch"],
+      "07": ["Amy Coney Barrett"]
+    }
+  },
+  {
+    label: "March 2001 Supreme Court",
+    data: {
+      "07": ["John Paul Stevens"],
+      "DC": [
+        "Antonin Scalia",
+        "Ruth Bader Ginsburg",
+        "Clarence Thomas"
+      ],
+      "09": ["Anthony Kennedy"],
+      "01": [
+        "David Souter",
+        "Stephen Breyer"
+      ]
+    }
+  },
+  {
+    label: "March 1976 Supreme Court",
+    data: {
+      "DC": ["Warren E. Burger"],
+      "02": ["Thurgood Marshall"],
+      "06": ["Potter Stewart"],
+      "08": ["Harry Blackmun"],
+      "07": ["John Paul Stevens"]
+    }
+  },
+  {
+    label: "March 1951 Supreme Court",
+    data: {
+      "DC": ["Fred M Vinson"],
+      "07": ["Sherman Minton"]
+    }
+  }
+];
+
+const tooltip = d3.select("#tooltip");
+
+function buildColorScale(periods) {
+  const max = d3.max(
+    periods.flatMap(p => Object.values(p.data).map(arr => arr.length))
+  ) || 1;
+
+  return d3.scaleSequential()
+    .domain([0, max])
+    .interpolator(d3.interpolateReds);
+}
+
+function drawCircuitMap(container, geojson, periodObj, colorScale) {
+  const card = container.append("div")
+    .attr("class", "map-card");
+
+  card.append("div")
+    .attr("class", "map-title")
+    .text(periodObj.label);
+
+  const svg = card.append("svg")
+    .attr("viewBox", `0 0 ${WIDTH} ${HEIGHT}`);
+
+  const projection = d3.geoAlbersUsa()
+    .fitSize([WIDTH, HEIGHT], geojson);
+
+  const path = d3.geoPath(projection);
+
+  function getCircuit(d) {
+    return d?.properties?.Circuit != null
+      ? String(d.properties.Circuit).trim()
+      : null;
+  }
+
+  function getNames(circuit) {
+    return periodObj.data[circuit] || [];
+  }
+
+  function getCount(circuit) {
+    return getNames(circuit).length;
+  }
+
+  function getFillFromFeature(d) {
+    const circuit = getCircuit(d);
+    const count = getCount(circuit);
+    return colorScale(count);
+  }
+
+  function showTooltip(event, circuit) {
+    const names = getNames(circuit);
+    const count = names.length;
+
+    tooltip
+      .style("opacity", 1)
+      .html(`
+        <strong>${periodObj.label}</strong><br>
+        Circuit: ${circuit}<br>
+        Justices: ${count}
+        <div style="margin-top:6px;">
+          ${count ? names.join("<br>") : "<span style='color:#666;'>None</span>"}
+        </div>
+      `);
+
+    moveTooltip(event);
+  }
+
+  function moveTooltip(event) {
+    tooltip
+      .style("left", (event.clientX + 12) + "px")
+      .style("top", (event.clientY + 12) + "px");
+  }
+
+  function hideTooltip() {
+    tooltip.style("opacity", 0);
+  }
+
+  svg.append("g")
+    .selectAll("path")
+    .data(geojson.features)
+    .join("path")
+    .attr("class", "district")
+    .attr("d", path)
+    .attr("fill", getFillFromFeature)
+    .on("mouseenter", function(event, d) {
+      const circuit = getCircuit(d);
+      if (circuit) showTooltip(event, circuit);
+    })
+    .on("mousemove", function(event) {
+      moveTooltip(event);
+    })
+    .on("mouseleave", hideTooltip);
+
+  // Find DC feature
+  const dcFeature = geojson.features.find(d => {
+    const p = d.properties || {};
+    return p.STATE_ABBR === "DC" || p.STATE_NAME === "District of Columbia";
+  });
+
+  // Add fixed inset square for DC
+  if (dcFeature) {
+    const insetSize = 18;
+    const insetX = WIDTH - 36;
+    const insetY = HEIGHT - 34;
+
+    const dcInset = svg.append("g")
+      .attr("class", "dc-inset");
+
+    dcInset.append("rect")
+      .attr("x", insetX)
+      .attr("y", insetY)
+      .attr("width", insetSize)
+      .attr("height", insetSize)
+      .attr("fill", getFillFromFeature(dcFeature))
+      .on("mouseenter", function(event) {
+        showTooltip(event, "DC");
+      })
+      .on("mousemove", function(event) {
+        moveTooltip(event);
+      })
+      .on("mouseleave", hideTooltip);
+
+    dcInset.append("text")
+      .attr("x", insetX+ insetSize / 2)
+      .attr("y", insetY - insetSize / 2)
+      .text("DC");
+  }
+}
+
+d3.json("qgis_export.geojson").then(geojson => {
+  const container = d3.select("#maps");
+  const colorScale = buildColorScale(periods);
+
+  periods.forEach(period => {
+    drawCircuitMap(container, geojson, period, colorScale);
+  });
+});
+</script>
+
+</body>
+</html>
