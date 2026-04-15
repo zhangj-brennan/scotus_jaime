@@ -20,11 +20,19 @@
       line-height: 1.45;
     }
 
+<<<<<<< HEAD
     .wrap {
       width: min(100% - 2 * var(--gutter), var(--max));
       margin-inline: auto;
       padding: 40px 0 60px;
     }
+=======
+.wrap {
+  width: min(100% - 40px, 1800px);
+  margin-inline: auto;
+  padding: 40px 0 60px;
+}
+>>>>>>> bc32482 (education width and color)
 
     .hero {
       margin-bottom: 32px;
@@ -46,10 +54,17 @@
     }
 
     .chart-grid {
+<<<<<<< HEAD
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 20px;
     }
+=======
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+>>>>>>> bc32482 (education width and color)
 
     .chart-card {
       border-top: 1px solid var(--border);
@@ -230,7 +245,11 @@
     function renderEducationSankey(containerSelector, config) {
       const width = 1200;
       const height = 420;
+<<<<<<< HEAD
       const margin = { top: 26, right: 200, bottom: 16, left: 200 };
+=======
+      const margin = { top: 26, right: 400, bottom: 16, left: 0 };
+>>>>>>> bc32482 (education width and color)
       const endpointLabel = 'Supreme Court';
 
       const container = d3.select(containerSelector)
@@ -305,11 +324,19 @@
         .on('mousemove', moveTooltip)
         .on('mouseleave', hideTooltip);
 
+<<<<<<< HEAD
       node.append('text')
         .attr('x', d => d.x0 < innerWidth / 2 ? d.x1 + 8 : d.x0 - 8)
         .attr('y', d => (d.y0 + d.y1) / 2)
         .attr('dy', '0.35em')
         .attr('text-anchor', d => d.x0 < innerWidth / 2 ? 'start' : 'end')
+=======
+          node.append('text')
+        .attr('x', d => d.x1 + 8)
+        .attr('y', d => (d.y0 + d.y1) / 2)
+        .attr('dy', '0.35em')
+        .attr('text-anchor', 'start')
+>>>>>>> bc32482 (education width and color)
         .text(d => sanitizeLabel(d.name));
     }
 
@@ -396,7 +423,11 @@
     }
 
     function linkColor(link, chartColor) {
+<<<<<<< HEAD
       return '#111111';
+=======
+      return '#aaaaaa';
+>>>>>>> bc32482 (education width and color)
     }
 
     function drawColumnLabels(g, innerWidth) {
