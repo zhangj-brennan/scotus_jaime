@@ -40,13 +40,15 @@
         justices: [
           { name: "John G. Roberts, Jr.", legal: [{ lat: 38.89511, lng: -77.03637, label: "Washington, D.C." }] },
           { name: "Clarence Thomas", legal: [{ lat: 38.573936, lng: -92.60376, label: "Missouri" }] },
-          { name: "Samuel A. Alito, Jr.", legal: parseCoordinatePairs("(NJ) 39.833851  (DC) 38.89511", "(NJ) -74.871826  (DC) -77.03637", "New Jersey; Washington D.C.") },
+          { name: "Samuel A. Alito, Jr.", legal: 
+          [{ lat: 38.89511, lng: -77.03637, label: "Washington, D.C." },{ lat: 39.833851, lng: -74.871826, label: "New Jersey" }]},
           { name: "Sonia Sotomayor", legal: [{ lat: 40.73061, lng: -73.935242, label: "New York" }] },
           { name: "Elena Kagan", legal: [{ lat: 38.89511, lng: -77.03637, label: "Washington, D.C." }] },
           { name: "Neil M. Gorsuch", legal: [{ lat: 38.89511, lng: -77.03637, label: "Washington, D.C." }] },
-          { name: "Brett M. Kavanaugh", legal: parseCoordinatePairs("(DC) 38.89511  (MD) 39.045753", "(DC) -77.03637  (MD) -76.641273", "Maryland; Washington, D.C.") },
+          { name: "Brett M. Kavanaugh", legal: [{ lat: 38.89511, lng: -77.03637, label: "Washington, D.C." },{ lat: 39.045753, lng: -76.641273, label: "Maryland" }]},
           { name: "Amy Coney Barrett", legal: [{ lat: 38.89511, lng: -77.03637, label: "Washington DC" }] },
-          { name: "Ketanji Brown Jackson", legal: parseCoordinatePairs("(DC) 38.89511  (MA) 42.407211", "(DC) -77.03637   (MA) -71.382439", "Massachusetts; Washington D.C.") }
+          { name: "Ketanji Brown Jackson", legal:
+          [{ lat: 38.89511, lng: -77.03637, label: "Washington, D.C." },{ lat: 42.407211, lng: -71.382439, label: "Massachusetts" }] }
         ]
       },
       march_2001: {
