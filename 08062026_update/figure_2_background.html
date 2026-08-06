@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supreme Court Legal Practice Map by Era</title>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    html, body { max-width: 800px; }
+    body { margin: 10px; padding-top: 10px; border-top: 2px solid #000; }
+    .wrap { width: 100%; max-width: 900px; margin: 0 auto; padding: 0; }
+    .hero { padding: 0 0 16px; }
+    .hero-kicker { display: none; }
+    .hero h1 { margin: 0; font-family: "Benton Sans", Helvetica, Arial, sans-serif; font-size: 20px; line-height: 1.08; }
+    .maps-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 20px; }
+    .small-map-card { min-width: 0; }
+    .small-map-title { display: flex; align-items: center; gap: 7px; margin: 0 0 5px; font-family: "Benton Sans", Helvetica, Arial, sans-serif; font-size: 12px; line-height: 1.25; font-weight: 700; }
+    .small-map-key { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 8px; }
+    .small-map { position: relative; width: 100%; aspect-ratio: 11 / 6.5; margin: 0; overflow: visible; }
+    .small-map svg { display: block; width: 100%; height: 100%; }
+    .tooltip { width: max-content; max-width: min(300px, calc(100vw - 24px)); transform: none; z-index: 20; }
+    @media (max-width: 700px) {
+      .maps-grid { grid-template-columns: 1fr; gap: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>Snapshots of Historical Supreme Courts - Places of Primary Legal Practice</h1>
+    </section>
+    <section class="maps-grid" id="maps-grid"></section>
+  </div>
+
+  <script>
+    const courtSets = {
+      current_2026: {
+        label: "Current Court September 2026",
+        color: "#ED1C24",
+        justices: [
+          { name: "John G. Roberts, Jr", legal: [{ lat: 38.89511, lng: -77.03637, label: "Washington, D.C." }] },
+          { name: "Clarence Thomas", legal: [{ lat: 38.573936, lng: -92.60376, label: "Missouri" }] },
+          { name: "Samuel A. Alito, Jr.", legal: [{ lat: 39.833851, lng: -74.871826, label: "New Jersey" }, { lat: 38.89511, lng: -77.03637, label: "Washington, D.C." }] },
+          { name: "Sonia Sotomayor", legal: [{ lat: 40.73061, lng: -73.935242, label: "New York" }] },
+          { name: "Elena Kagan", legal: [{ lat: 38.89511, lng: -77.03637, label: "Washington, D.C." }] },
+          { name: "Neil M. Gorsuch", legal: [{ lat: 38.89511, lng: -77.03637, label: "Washington, D.C." }, { lat: 39.113014, lng: -105.358887, label: "Colorado" }] },
+          { name: "Brett M. Kavanaugh", legal: [{ lat: 38.89511, lng: -77.03637, label: "Washington, D.C." }, { lat: 39.045753, lng: -76.641273, label: "Maryland" }] },
+          { name: "Amy Coney Barrett", legal: [{ lat: 40.273502, lng: -86.126976, label: "Indiana" }] },
+          { name: "Ketanji Brown Jackson", legal: [{ lat: 38.89511, lng: -77.03637, label: "Washington, D.C." }, { lat: 42.4072, lng: -71.3824, label: "Massachusetts" }] }
+        ]
+      },
+      august_2001: {
+        label: "September 2001",
+        color: "#3995B2",
+        justices: [
+          { name: "William Rehnquist", legal: [{ lat: 34.048927, lng: -111.093735, label: "Arizona" }] },
+          { name: "John Paul Stevens", legal: [{ lat: 40, lng: -89, label: "Illinois" }] },
+          { name: "Sandra Day O'Connor", legal: [{ lat: 34.048927, lng: -111.093735, label: "Arizona" }] },
+          { name: "Antonin Scalia", legal: [{ lat: 40.3675, lng: -82.9962, label: "Ohio" }] },
+          { name: "Anthony Kennedy", legal: [{ lat: 36.778259, lng: -119.417931, label: "California" }] },
+          { name: "David Souter", legal: [{ lat: 44, lng: -71.5, label: "New Hampshire" }] },
+          { name: "Ruth Bader Ginsburg", legal: [{ lat: 40, lng: -74, label: "New York" }, { lat: 38.89511, lng: -77.03637, label: "Washington, D.C." }] },
+          { name: "Stephen Breyer", legal: [{ lat: 42.4072, lng: -71.3824, label: "Massachusetts" }] },
+          { name: "Clarence Thomas", legal: [{ lat: 38.573936, lng: -92.60376, label: "Missouri" }] }
+        ]
+      },
+      august_1976: {
+        label: "September 1976",
+        color: "#FFCF01",
+        justices: [
+          { name: "Warren E. Burger", legal: [{ lat: 46.3924, lng: -94.6362, label: "Minnesota" }, { lat: 38.89511, lng: -77.03637, label: "Washington, D.C." }] },
+          { name: "Thurgood Marshall", legal: [{ lat: 39.045753, lng: -76.641273, label: "Maryland" }] },
+          { name: "Bryon White", legal: [{ lat: 39, lng: -105.3, label: "Colorado" }] },
+          { name: "Potter Stewart", legal: [{ lat: 40, lng: -74, label: "New York" }, { lat: 40.3675, lng: -82.9962, label: "Ohio" }] },
+          { name: "William J Brennan Jr.", legal: [{ lat: 39.833851, lng: -74.871826, label: "New Jersey" }] },
+          { name: "Harry Blackmun", legal: [{ lat: 46.3924, lng: -94.6362, label: "Minnesota" }] },
+          { name: "Lewis F Powell Jr.", legal: [{ lat: 37.926868, lng: -78.024902, label: "Virginia" }] },
+          { name: "William Rehnquist", legal: [{ lat: 34.048927, lng: -111.093735, label: "Arizona" }] },
+          { name: "John Paul Stevens", legal: [{ lat: 40, lng: -89, label: "Illinois" }] }
+        ]
+      },
+      august_1951: {
+        label: "September 1951",
+        color: "#767c7d",
+        justices: [
+          { name: "Fred M Vinson", legal: [{ lat: 37.839333, lng: -84.27002, label: "Kentucky" }, { lat: 38.89511, lng: -77.03637, label: "Washington, D.C." }] },
+          { name: "Tom C Clark", legal: [{ lat: 31, lng: -100, label: "Texas" }] },
+          { name: "Sherman Minton", legal: [{ lat: 40.2735, lng: -86.1269, label: "Indiana" }] },
+          { name: "Harold H Burton", legal: [{ lat: 40.3675, lng: -82.9962, label: "Ohio" }] },
+          { name: "Robert H Jackson", legal: [{ lat: 40, lng: -74, label: "New York" }, { lat: 38.89511, lng: -77.03637, label: "Washington, D.C." }] },
+          { name: "William O Douglas", legal: [{ lat: 40, lng: -74, label: "New York" }, { lat: 38.89511, lng: -77.03637, label: "Washington, D.C." }] },
+          { name: "Felix Frankfurter", legal: [{ lat: 40, lng: -74, label: "New York" }, { lat: 38.89511, lng: -77.03637, label: "Washington, D.C." }] },
+          { name: "Stanley Forman Reed", legal: [{ lat: 37.839333, lng: -84.27002, label: "Kentucky" }] },
+          { name: "Hugo Black", legal: [{ lat: 32.806671, lng: -86.79113, label: "Alabama" }] }
+        ]
+      }
+    };
+
+    const views = [
+      "current_2026",
+      "august_2001",
+      "august_1976",
+      "august_1951"
+    ];
+
+    const width = 550;
+    const height = 325;
+    const tooltip = d3.select("body")
+      .append("div")
+      .attr("class", "tooltip");
+
+    init();
+
+    async function init() {
+      const us = await d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json");
+      const nation = topojson.feature(us, us.objects.nation);
+      const states = topojson.feature(us, us.objects.states);
+
+      const cards = d3.select("#maps-grid")
+        .selectAll("article.small-map-card")
+        .data(views)
+        .join("article")
+        .attr("class", "small-map-card");
+
+      cards.append("h2")
+        .attr("class", "small-map-title")
+        .html(key => `<span>${courtSets[key].label}</span>`);
+
+      cards.append("div")
+        .attr("class", "small-map")
+        .attr("data-court", d => d)
+        .each(function(key) {
+          renderMap(this, key, nation, states);
+        });
+    }
+
+    function renderMap(container, key, nation, states) {
+      const set = courtSets[key];
+      const projection = d3.geoAlbersUsa()
+        .translate([width / 2, height / 2])
+        .scale(650);
+      const path = d3.geoPath(projection);
+
+      const svg = d3.select(container)
+        .append("svg")
+        .attr("viewBox", `0 0 ${width} ${height}`)
+        .attr("preserveAspectRatio", "xMidYMid meet");
+
+      svg.append("path")
+        .datum(nation)
+        .attr("class", "nation")
+        .attr("d", path);
+
+      svg.append("g")
+        .selectAll("path.state")
+        .data(states.features)
+        .join("path")
+        .attr("class", "state")
+        .attr("d", path);
+
+      const points = aggregatePoints(flattenPoints(key))
+        .map(d => {
+          const xy = projection([d.lng, d.lat]);
+          return xy ? { ...d, x: xy[0], y: xy[1] } : null;
+        })
+        .filter(Boolean);
+
+      svg.append("g")
+        .selectAll("circle.dot")
+        .data(points)
+        .join("circle")
+        .attr("class", "dot")
+        .attr("fill", "#ED1C24")//set.color)
+        .attr("cx", d => d.x)
+        .attr("cy", d => d.y)
+        .attr("r", d => circleRadius(d.count))
+        .on("mouseenter", (event, d) => showTooltip(event, d, set.label))
+        .on("mousemove", moveTooltip)
+        .on("mouseleave", hideTooltip);
+    }
+
+    function flattenPoints(viewKey) {
+      const out = [];
+      courtSets[viewKey].justices.forEach(justice => {
+        (justice.legal || []).forEach(loc => {
+          out.push({
+            name: justice.name,
+            lat: +loc.lat,
+            lng: +loc.lng,
+            locationLabel: loc.label
+          });
+        });
+      });
+      return out;
+    }
+
+    function aggregatePoints(points) {
+      const grouped = new Map();
+      points.forEach(d => {
+        const key = `${d.lat}__${d.lng}`;
+        if (!grouped.has(key)) {
+          grouped.set(key, {
+            lat: d.lat,
+            lng: d.lng,
+            locationLabel: d.locationLabel,
+            names: [d.name],
+            count: 1
+          });
+        } else {
+          const entry = grouped.get(key);
+          entry.names.push(d.name);
+          entry.count += 1;
+        }
+      });
+      return Array.from(grouped.values())
+        .map(d => ({ ...d, names: d.names.sort(d3.ascending) }));
+    }
+
+    function circleRadius(count) {
+      return 6 + Math.sqrt(Math.max(0, count - 1)) * 3.5;
+    }
+
+    function showTooltip(event, d, label) {
+      const namesHtml = d.names.map(name => `• ${name}`).join("<br>");
+      tooltip
+        .style("opacity", 1)
+        .html(
+          `<strong>${label}</strong><br>` +
+          `<strong>${d.count} ${d.count === 1 ? "justice" : "justices"}</strong><br>` +
+          `${d.locationLabel}<br><br>${namesHtml}`
+        );
+      moveTooltip(event);
+    }
+
+    function moveTooltip(event) {
+      const node = tooltip.node();
+      const tooltipWidth = node.offsetWidth;
+      const tooltipHeight = node.offsetHeight;
+      const offset = 12;
+      const padding = 8;
+      const mouseX = event.clientX;
+      const mouseY = event.clientY;
+
+      let left = mouseX < window.innerWidth / 2
+        ? mouseX + offset
+        : mouseX - tooltipWidth - offset;
+      let top = mouseY - tooltipHeight / 2;
+
+      left = Math.max(padding, Math.min(left, window.innerWidth - tooltipWidth - padding));
+      top = Math.max(padding, Math.min(top, window.innerHeight - tooltipHeight - padding));
+
+      tooltip
+        .style("position", "fixed")
+        .style("left", `${left}px`)
+        .style("top", `${top}px`);
+    }
+
+    function hideTooltip() {
+      tooltip.style("opacity", 0);
+    }
+  </script>
+</body>
+</html>
