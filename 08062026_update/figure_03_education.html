@@ -8,187 +8,134 @@
   <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
       <link rel="stylesheet" href="style.css">
 <style>
-  * {
-    box-sizing: border-box;
-  }
+   
 
-  html,
-  body {
-    margin: 0;
-    padding: 0;
-    -webkit-text-size-adjust: 100%;
-  }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
 
-  body {
-    color: #000;
-    font-family: "Benton Sans", Helvetica, Arial, sans-serif;
-    font-size: 12px;
-    line-height: 1.35;
-    background: #fff;
-    margin: 10px;
-    padding-top: 10px;
-    border-top: 2px solid #000;
-      max-width:800px;
-}
+    body {
+      font-family: var(--font-sans);
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.45;
+    }
 
- .wrap {
-  max-width: 800px;
-  width: calc(100% - 40px);
-  margin: 0 auto;
+.wrap {
+  width: min(100% - 40px, 1800px);
+  margin-inline: auto;
   padding: 40px 0 60px;
 }
 
-  .hero {
-    margin: 0 0 20px;
-    padding: 0;
-  }
-
-  .hero-kicker {
-    display: none;
-  }
-
-  .hero h1 {
-    margin: 0;
-    font-size: 20px;
-    line-height: 1.08;
-    font-weight: 700;
-  }
-
-  .chart-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-
-  .chart-card {
-    margin: 0;
-    padding: 0;
-    border: 0;
-  }
-
-  .chart-head {
-    max-width:800px;
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 8px 16px;
-    flex-wrap: wrap;
-    margin: 0 0 8px;
-    padding: 0;
-  }
-
-  .chart-title {
-    margin: 0;
-    font-size: 14px;
-    line-height: 1.15;
-    font-weight: 700;
-  }
-
-  .chart-meta {
-    color: #000;
-    font-size: 11px;
-    line-height: 1.25;
-text-align:left;
-  }
-
-  .chart-frame {
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    overflow-x: auto;
-    overflow-y: hidden;
-  }
-
-  svg {
-    display: block;
-    background: #fff;
-  }
-
-  .node rect {
-    stroke: rgba(0, 0, 0, 0.15);
-    shape-rendering: crispEdges;
-  }
-
-  .node text {
-    font-family: "Benton Sans", Helvetica, Arial, sans-serif;
-    font-size: 11px;
-    fill: #000;
-  }
-
-  .link {
-    fill: none;
-    stroke-opacity: 0.35;
-    mix-blend-mode: multiply;
-  }
-
-  .link {
-    transition: stroke-opacity 120ms ease, stroke-width 120ms ease;
-  }
-
-  .link.is-dimmed {
-    stroke-opacity: 0.08;
-  }
-
-  .link.is-highlighted {
-    stroke-opacity: 0.9;
-  }
-
-  .col-label {
-    font-family: "Benton Sans", Helvetica, Arial, sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    fill: #000;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-
-  .tooltip {
-    position: fixed;
-    pointer-events: none;
-    width: max-content;
-    max-width: min(320px, calc(100vw - 20px));
-    background: #fff;
-    color: #000;
-    border: 1px solid #000;
-    padding: 8px 10px;
-    border-radius: 0;
-    font-family: "Benton Sans", Helvetica, Arial, sans-serif;
-    font-size: 12px;
-    line-height: 1.35;
-    opacity: 0;
-    transition: opacity 120ms ease;
-    z-index: 10;
-  }
-
-  @media (max-width: 700px) {
-    body {
-      margin: 8px;
-      padding-top: 8px;
-    }
-
     .hero {
-      margin-bottom: 16px;
+      margin-bottom: 32px;
     }
 
-    .chart-grid {
-      gap: 16px;
+    .hero-kicker {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: 12px;
+    }
+
+    .subhed {
+      max-width: 80ch;
+      margin: 16px 0 0;
+      font-size: 1.05rem;
+      color: var(--muted);
+    }
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+    .chart-card {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 0 16px;
     }
 
     .chart-head {
-      display: block;
-      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .chart-title {
+      margin: 0;
+      font-size: 1.5rem;
+      line-height: 1.1;
+      font-weight: 800;
     }
 
     .chart-meta {
-      margin-top: 3px;
+      color: var(--muted);
+      font-size: 13px;
     }
-  }
-</style>
+
+    .chart-frame {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    svg {
+      display: block;
+      background: #fff;
+    }
+
+    .node rect {
+      stroke: rgba(0,0,0,0.15);
+      shape-rendering: crispEdges;
+    }
+
+    .node text {
+      font-size: 12px;
+      fill: #111;
+    }
+
+    .link {
+      fill: none;
+      stroke-opacity: 0.35;
+      mix-blend-mode: multiply;
+    }
+
+    .link:hover {
+      stroke-opacity: 0.65;
+    }
+
+    .col-label {
+      font-size: 12px;
+      font-weight: 700;
+      fill: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .tooltip {
+      position: fixed;
+      pointer-events: none;
+      background: rgba(17,17,17,0.96);
+      color: #fff;
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.4;
+      max-width: 320px;
+      opacity: 0;
+      transition: opacity 120ms ease;
+      z-index: 10;
+    }
+  </style>
 </head>
 <body>
   <div class="wrap">
     <section class="hero">
-      <h1>Educational Background of Current Supreme Court</h1>
+      <div class="hero-kicker">Supreme Court</div>
+      <h1>Justice Education Sankeys</h1>
     </section>
 
     <section class="chart-grid" id="chartGrid"></section>
@@ -200,7 +147,7 @@ text-align:left;
     const chartData = [
       {
         key: 'current_2026',
-        title: 'Current Court September 2026',
+        title: 'CURRENT COURT MARCH 2026',
         color: '#ED1C24',
         rows: [
           ['John G. Roberts, Jr.', 'Harvard College (B.A.)', 'Harvard Law School (J.D.)'],
@@ -216,7 +163,7 @@ text-align:left;
       },
       {
         key: 'march_2001',
-        title: 'September 2001',
+        title: 'March 2001 Supreme Court',
         color: '#3995B2',
         rows: [
           ['William Rehnquist', 'Stanford University (B.A.)', 'Stanford Law School (LL.B)'],
@@ -225,14 +172,14 @@ text-align:left;
           ['Stephen Breyer', 'Stanford University (A.B.)', 'Harvard Law School (LL.B)'],
           ['Antonin Scalia', 'Georgetown College (B.A.)', 'Harvard Law School (LL. B)'],
           ['David Souter', 'Harvard College (B.A.)', 'Harvard Law School (LL.B)'],
-          ['Ruth Bader Ginsburg', 'Cornell University (A.B.)', 'Harvard Law School'],
+          ['Ruth Bader Ginsburg', 'Cornell University (A.B.)', 'Harvard Law School; Columbia Law School (LL.B)'],
           ['John Paul Stevens', 'University of Chicago (B.A.)', 'Northwestern University School of Law (J.D.)'],
           ['Clarence Thomas', 'College of the Holy Cross (B.A.)', 'Yale Law School (J.D.)']
         ]
       },
       {
         key: 'march_1976',
-        title: 'September 1976',
+        title: 'March 1976 Supreme Court',
         color: '#FFCF01',
         rows: [
           ['Warren E. Burger', '', 'St. Paul College of Law (LL.B)'],
@@ -248,7 +195,7 @@ text-align:left;
       },
       {
         key: 'march_1951',
-        title: 'September 1951',
+        title: 'March 1951 Supreme Court',
         color: '#767c7d',
         rows: [
           ['Fred M Vinson', 'Centre College (B.A.)', 'College of Law of Central University (LL.B)'],
@@ -281,9 +228,9 @@ text-align:left;
     });
 
     function renderEducationSankey(containerSelector, config) {
-      const width = 800;
-      const height = 350;
-      const margin = { top: 26, right: 200, bottom: 16, left: 0 };
+      const width = 1200;
+      const height = 420;
+      const margin = { top: 26, right: 400, bottom: 16, left: 0 };
       const endpointLabel = 'Supreme Court';
 
       const container = d3.select(containerSelector)
@@ -295,7 +242,7 @@ text-align:left;
       container.append('div')
         .attr('class', 'chart-head')
         .html(`
-          <div><h2 class="chart-title">${config.title}</h2></div>
+          <h2 class="chart-title">${config.title}</h2>
           <div class="chart-meta">${graph.justiceCount} justices · ${graph.collegeCount} colleges · ${graph.lawSchoolCount} law schools</div>
         `);
 
@@ -310,32 +257,20 @@ text-align:left;
 
       const sankey = d3.sankey()
         .nodeId(d => d.id)
-        .nodeWidth(6)
-        .nodePadding(20)
+        .nodeWidth(10)
+        .nodePadding(12)
         .nodeAlign(d3.sankeyJustify)
         .extent([[0, 20], [innerWidth, innerHeight - 10]])
-        .nodeSort((a, b) => d3.ascending(a.order, b.order))
-        .linkSort((a, b) => d3.ascending(a.personOrder, b.personOrder));
+        .nodeSort(null);
 
       const sankeyGraph = sankey({
         nodes: graph.nodes.map(d => ({ ...d })),
         links: graph.links.map(d => ({ ...d }))
       });
 
-      const nodeScale = 1;
-
-      sankeyGraph.nodes.forEach(d => {
-        const h = d.y1 - d.y0;
-        const newH = Math.max(8, h * nodeScale);
-        const center = (d.y0 + d.y1) / 2;
-
-        d.y0 = center - newH / 2;
-        d.y1 = center + newH / 2;
-      });
-
       drawColumnLabels(g, innerWidth);
 
-      const links = g.append('g')
+      g.append('g')
         .selectAll('path')
         .data(sankeyGraph.links)
         .join('path')
@@ -344,26 +279,12 @@ text-align:left;
         .attr('stroke', d => linkColor(d, config.color))
         .attr('stroke-width', d => Math.max(0.6, d.width * 0.7))
         .on('mouseenter', (event, d) => {
-          links
-            .classed('is-highlighted', link => link.justice === d.justice)
-            .classed('is-dimmed', link => link.justice !== d.justice)
-           .attr('stroke-width', link => Math.max(0.6, link.width * 0.7))
-
-          showTooltip(
-            event,
-            `<strong>${sanitizeLabel(d.justice)}</strong><br>` +
-            `${sanitizeLabel(d.flowLabel)}`
-          );
+          const source = sanitizeLabel(d.source.name);
+          const target = sanitizeLabel(d.target.name);
+          showTooltip(event, `<strong>${source}</strong> → <strong>${target}</strong><br>Value: ${formatValue(d.value)}`);
         })
         .on('mousemove', moveTooltip)
-        .on('mouseleave', () => {
-          links
-            .classed('is-highlighted', false)
-            .classed('is-dimmed', false)
-            .attr('stroke-width', link => Math.max(0.6, link.width * 0.7));
-
-          hideTooltip();
-        });
+        .on('mouseleave', hideTooltip);
 
       const node = g.append('g')
         .selectAll('g')
@@ -378,50 +299,11 @@ text-align:left;
         .attr('width', d => d.x1 - d.x0)
         .attr('fill', d => nodeColor(d, config.color))
         .on('mouseenter', (event, d) => {
-          const connectedJustices = Array.from(new Set(
-            sankeyGraph.links
-              .filter(link => link.source.id === d.id || link.target.id === d.id)
-              .map(link => link.justice)
-          )).sort(d3.ascending);
-
-          links
-            .classed('is-highlighted', link => connectedJustices.includes(link.justice))
-            .classed('is-dimmed', link => !connectedJustices.includes(link.justice))
-            .attr('stroke-width', link => Math.max(0.6, link.width * 0.7))
-
-          const typeLabel =
-            d.type === 'justice' ? 'Justice' :
-            d.type === 'college' ? 'College' :
-            d.type === 'law' ? 'Law School' :
-            '';
-
-          const justiceList = connectedJustices
-            .map(name => `• ${sanitizeLabel(name)}`)
-            .join('<br>');
-
-          if (d.type === 'justice') {
-              showTooltip(
-                event,
-                `<strong>${sanitizeLabel(d.name)}</strong>`
-              );
-            } else {
-              showTooltip(
-                event,
-                `<strong>${sanitizeLabel(d.name)}</strong>` +
-                (typeLabel ? `<br>${typeLabel}` : '') +
-                `<br><br>${justiceList}`
-              );
-            }
+          const typeLabel = d.type === 'justice' ? 'Justice' : d.type === 'college' ? 'College' : d.type === 'law' ? 'Law School' : 'Endpoint';
+          showTooltip(event, `<strong>${sanitizeLabel(d.name)}</strong><br>${typeLabel}<br>Total flow: ${formatValue(d.value)}`);
         })
         .on('mousemove', moveTooltip)
-        .on('mouseleave', () => {
-          links
-            .classed('is-highlighted', false)
-            .classed('is-dimmed', false)
-            .attr('stroke-width', link => Math.max(0.6, link.width * 0.7));
-
-          hideTooltip();
-        });
+        .on('mouseleave', hideTooltip);
 
           node.append('text')
         .attr('x', d => d.x1 + 8)
@@ -432,98 +314,55 @@ text-align:left;
     }
 
     function buildSankeyGraph(rows, endpointLabel) {
-      const SCALE = 0.6;
+      const SCALE = 0.6; // shrink vertical node size
 
       const nodes = [];
-      const nodeById = new Map();
-      const links = [];
+      const nodeSeen = new Set();
+      const linkMap = new Map();
 
-      function addNode(id, name, type, personOrder) {
-        if (!nodeById.has(id)) {
-          const node = {
-            id,
-            name,
-            type,
-            order: personOrder
-          };
-          nodeById.set(id, node);
-          nodes.push(node);
-        } else {
-          nodeById.get(id).order = Math.min(
-            nodeById.get(id).order,
-            personOrder
-          );
+      function addNode(id, name, type) {
+        if (nodeSeen.has(id)) return;
+        nodeSeen.add(id);
+        nodes.push({ id, name, type });
+      }
+
+      function addLink(source, target, value) {
+        const key = `${source}|||${target}`;
+        if (!linkMap.has(key)) {
+          linkMap.set(key, { source, target, value: 0 });
         }
+        linkMap.get(key).value += value * SCALE;
       }
 
-      function addLink(source, target, value, personOrder, justice, flowLabel) {
-        links.push({
-          source,
-          target,
-          value: value * SCALE,
-          personOrder,
-          justice,
-          flowLabel
-        });
-      }
-
-      rows.forEach(([justiceRaw, collegeRaw, lawRaw], personOrder) => {
+      rows.forEach(([justiceRaw, collegeRaw, lawRaw]) => {
         const justice = justiceRaw.trim();
         const college = normalizeCollege(collegeRaw);
         const lawSchools = splitLawSchools(lawRaw);
-        const resolvedLawSchools = lawSchools.length
-          ? lawSchools
-          : ['Unknown law school'];
-        const share = 1 / resolvedLawSchools.length;
+        const share = lawSchools.length ? 1 / lawSchools.length : 1;
 
-        const justiceId = `justice:${justice}`;
-        const collegeId = `college:${college}`;
-        const endpointId = `endpoint:${endpointLabel}`;
+        addNode(`justice:${justice}`, justice, 'justice');
+        addNode(`college:${college}`, college, 'college');
+        addLink(`justice:${justice}`, `college:${college}`, 1);
 
-        addNode(justiceId, justice, 'justice', personOrder);
-        addNode(collegeId, college, 'college', personOrder);
-        addNode(endpointId, endpointLabel, 'endpoint', personOrder);
+        if (!lawSchools.length) {
+          addNode(`law:Unknown law school`, 'Unknown law school', 'law');
+          addLink(`college:${college}`, `law:Unknown law school`, 1);
+          addNode(`endpoint:${endpointLabel}`, endpointLabel, 'endpoint');
+          addLink(`law:Unknown law school`, `endpoint:${endpointLabel}`, 1);
+          return;
+        }
 
-        const completeFlow =
-          `${justice} → ${college} → ${resolvedLawSchools.join('; ')} → ${endpointLabel}`;
-
-        addLink(
-          justiceId,
-          collegeId,
-          1,
-          personOrder,
-          justice,
-          completeFlow
-        );
-
-        resolvedLawSchools.forEach(lawSchool => {
-          const lawId = `law:${lawSchool}`;
-
-          addNode(lawId, lawSchool, 'law', personOrder);
-
-          addLink(
-            collegeId,
-            lawId,
-            share,
-            personOrder,
-            justice,
-            completeFlow
-          );
-
-          addLink(
-            lawId,
-            endpointId,
-            share,
-            personOrder,
-            justice,
-            completeFlow
-          );
+        lawSchools.forEach(lawSchool => {
+          addNode(`law:${lawSchool}`, lawSchool, 'law');
+          addLink(`college:${college}`, `law:${lawSchool}`, share);
+          addNode(`endpoint:${endpointLabel}`, endpointLabel, 'endpoint');
+          addLink(`law:${lawSchool}`, `endpoint:${endpointLabel}`, share);
         });
       });
 
       return {
         nodes,
-        links,
+        links: Array.from(linkMap.values()),
         justiceCount: rows.length,
         collegeCount: nodes.filter(d => d.type === 'college').length,
         lawSchoolCount: nodes.filter(d => d.type === 'law').length
@@ -553,7 +392,7 @@ text-align:left;
     }
 
     function nodeColor(node, chartColor) {
-      return '#000000';
+      return '#111111';
     }
 
     function linkColor(link, chartColor) {

@@ -14,7 +14,6 @@
       margin: 0;
       padding: 0;
       -webkit-text-size-adjust: 100%;
-      max-width:600px;
     }
 
     body {
@@ -23,9 +22,6 @@
       font-size: 12px;
       line-height: 1.35;
       background: #fff;
-      margin:10px;
-      padding-top:10px;
-      border-top:2px solid black;
     }
 
     .wrap {
@@ -61,7 +57,7 @@
 
     .hero h1 {
       margin: 0;
-      font-size: 20px;
+      font-size: 22px;
       line-height: 1.08;
       font-weight: 700;
     }
@@ -94,6 +90,14 @@
       height: 7px;
       flex: 0 0 7px;
       border-radius: 50%;
+    }
+
+    #status {
+      margin: 0;
+      min-height: 16px;
+      font-size: 11px;
+      line-height: 1.25;
+      color: #555;
     }
 
     #map {
@@ -139,13 +143,14 @@
 <body>
   <div class="wrap">
     <section class="hero">
-      <!-- <div class="hero-kicker">Supreme Court</div> -->
-      <h1>Geographical Background of the Current Supreme Court</h1>
+      <div class="hero-kicker">Supreme Court</div>
+      <h1>Justice Locations</h1>
     </section>
 
     <section class="section">
       <div class="panel">
       <div class="controls" id="controls"></div>
+      <div id="status"></div>
     </div>
     </section>
 
@@ -185,7 +190,7 @@
         legalPractice: "New Jersey; Washington, D.C.",
         legal: [
           { lat: 39.833851, lng: -74.871826, label: "New Jersey" },
-          {  lat: 38.89511, lng: -77.03637, label: "Washington, D.C." }
+          { lat: 38.89511, lng: -73.935242, label: "Washington, D.C." }
         ]
       },
       {
@@ -254,13 +259,13 @@
     ];
 
     const views = [
-      { key: "all", label: "All" },
       { key: "birth", label: "Birthplace" },
       { key: "law", label: "Law School" },
-      { key: "legal", label: "Place(s) of Primary Legal Practice" }
+      { key: "legal", label: "Legal Practice" },
+      { key: "all", label: "All" }
     ];
 
-    let currentView = "all";
+    let currentView = "birth";
 
     const viewColors = {
       birth: "#ED1C24",
@@ -270,6 +275,7 @@
     };
 
     const mapEl = document.getElementById("map");
+    const statusEl = document.getElementById("status");
     const tooltip = d3.select("#map")
       .append("div")
       .attr("class", "tooltip");
@@ -371,9 +377,9 @@
         const counts = ["birth", "law", "legal"]
           .map(key => `${labelForView(key)}: ${points.filter(d => d.viewKey === key).length}`)
           .join(" · ");
-        // statusEl.textContent = `All locations: ${points.length} mapped circles. ${counts}.`;
+        statusEl.textContent = `All locations: ${points.length} mapped circles. ${counts}.`;
       } else {
-        // statusEl.textContent = `${labelForView(currentView)}: ${points.length} mapped circle${points.length === 1 ? "" : "s"}.`;
+        statusEl.textContent = `${labelForView(currentView)}: ${points.length} mapped circle${points.length === 1 ? "" : "s"}.`;
       }
 
       const dots = dotLayer.selectAll("circle.dot")
@@ -429,52 +435,22 @@
     function showTooltip(event, d) {
       const namesHtml = d.names.map(name => `• ${name}`).join("<br>");
       tooltip
-      .style("opacity", 1)
-      .html(
-        `<strong>${d.count} ${d.count === 1 ? "justice" : "justices"}</strong><br>` +
-        `${labelForView(d.viewKey)}: ${d.locationLabel}<br><br>${namesHtml}`
-      );
+        .style("opacity", 1)
+        .html(
+          `<strong>${d.count} ${d.count === 1 ? "justice" : "justices"}</strong><br>` +
+          `${labelForView(d.viewKey)}: ${d.locationLabel}<br>` +
+          `Lat: ${d.lat}, Lng: ${d.lng}<br><br>${namesHtml}`
+        );
       moveTooltip(event, d);
     }
 
-  function moveTooltip(event) {
-  const bounds = mapEl.getBoundingClientRect();
-  const tooltipNode = tooltip.node();
+    function moveTooltip(event) {
+      const bounds = mapEl.getBoundingClientRect();
+      tooltip
+        .style("left", `${event.clientX - bounds.left}px`)
+        .style("top", `${event.clientY - bounds.top}px`);
+    }
 
-  const tooltipWidth = tooltipNode.offsetWidth;
-  const tooltipHeight = tooltipNode.offsetHeight;
-
-  const mouseX = event.clientX - bounds.left;
-  const mouseY = event.clientY - bounds.top;
-  const offset = 12;
-  const edgePadding = 8;
-
-  let left;
-  let top = mouseY - tooltipHeight / 2;
-
-  // Mouse on left half: tooltip appears to the right.
-  if (mouseX < bounds.width / 2) {
-    left = mouseX + offset;
-  } else {
-    // Mouse on right half: tooltip appears to the left.
-    left = mouseX - tooltipWidth - offset;
-  }
-
-  // Keep tooltip inside the map.
-  left = Math.max(
-    edgePadding,
-    Math.min(left, bounds.width - tooltipWidth - edgePadding)
-  );
-
-  top = Math.max(
-    edgePadding,
-    Math.min(top, bounds.height - tooltipHeight - edgePadding)
-  );
-
-  tooltip
-    .style("left", `${left}px`)
-    .style("top", `${top}px`);
-}
     function hideTooltip() {
       tooltip.style("opacity", 0);
     }
